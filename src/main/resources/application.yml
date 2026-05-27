@@ -1,0 +1,90 @@
+server:
+  port: 8084
+  forward-headers-strategy: framework
+
+spring:
+  application:
+    name: trade-service
+  messages:
+    basename: error
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/fintech_trade_db
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:MangoTree@08}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:ZmluVGVjaExlZGdlckp3dFNlY3JldEtleVRoaXNJc1ZlcnlMb25nQW5kU2VjdXJlRm9yUHJvZHVjdGlvbjIwMjU=}
+  service:
+    ledger-service-url: ${LEDGER_SERVICE_URL:http://localhost:8083}
+    wallet-service-url: ${WALLET_SERVICE_URL:http://localhost:8082}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka/}
+  instance:
+    prefer-ip-address: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      walletService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+      ledgerService:
+        register-health-indicator: true
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+        permitted-number-of-calls-in-half-open-state: 3
+        sliding-window-type: COUNT_BASED
+  retry:
+    instances:
+      walletService:
+        max-attempts: 3
+        wait-duration: 1s
+      ledgerService:
+        max-attempts: 3
+        wait-duration: 1s
+
+logging:
+  level:
+    com.fintech.trade: DEBUG
+    com.fintech.trade.config: INFO
+    com.fintech.trade.api: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level [%logger{36}] - %msg%n"
+  file:
+    name: logs/trade-service.log
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
