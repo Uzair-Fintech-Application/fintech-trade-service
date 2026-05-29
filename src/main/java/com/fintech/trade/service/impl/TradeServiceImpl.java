@@ -94,6 +94,7 @@ public class TradeServiceImpl implements TradeService {
     }
 
     @Override
+    @Transactional
     public Trade acceptTrade(Integer buyerId, Integer tradeId) {
         log.info("TRADE_ACCEPT BEGIN | buyerId={} | tradeId={}", buyerId, tradeId);
 
@@ -126,8 +127,8 @@ public class TradeServiceImpl implements TradeService {
             throw new IllegalArgumentException(msg("error.recipient.wallets.missing"));
         }
 
-        WalletResponse systemSellWallet = walletServiceClient.getOrCreateWallet(2, trade.getSellCurrency().name());
-        WalletResponse systemBuyWallet = walletServiceClient.getOrCreateWallet(2, trade.getBuyCurrency().name());
+        WalletResponse systemSellWallet = walletServiceClient.getOrCreateWallet(TradeConstants.COMMISSION_USER_ID, trade.getSellCurrency().name());
+        WalletResponse systemBuyWallet = walletServiceClient.getOrCreateWallet(TradeConstants.COMMISSION_USER_ID, trade.getBuyCurrency().name());
 
         BigDecimal userRate = new BigDecimal("0.999");
         BigDecimal buyerPayout = trade.getSellAmount().multiply(userRate).setScale(TradeConstants.CURRENCY_SCALE, RoundingMode.HALF_UP);
@@ -246,6 +247,11 @@ public class TradeServiceImpl implements TradeService {
     @Transactional(readOnly = true)
     public Page<Trade> getUserTrades(Integer userId, Pageable pageable) {
         return tradeRepository.findUserTradesCustomOrdered(userId, pageable);
+    }
+
+    @Override
+    public MarketOracleResponse getOracleRates(String base) {
+        return marketOracleClient.getLatestRates(base);
     }
 
     private String msg(String key, Object... args) {

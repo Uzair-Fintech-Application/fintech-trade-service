@@ -23,7 +23,6 @@ public class TradeController {
 
     private final TradeService tradeService;
     private final EntityMapper mapper;
-    private final com.fintech.trade.client.MarketOracleClient marketOracleClient;
 
     @PostMapping
     @Operation(summary = "Create a trade offer")
@@ -36,7 +35,7 @@ public class TradeController {
     @GetMapping("/oracle/rates")
     @Operation(summary = "Get live market rates from oracle API")
     public ResponseEntity<MarketOracleResponse> getOracleRates(@RequestParam String base) {
-        return ResponseEntity.ok(marketOracleClient.getLatestRates(base));
+        return ResponseEntity.ok(tradeService.getOracleRates(base));
     }
 
     @GetMapping
@@ -81,3 +80,4 @@ public class TradeController {
         return ResponseEntity.noContent().build();
     }
 }
+

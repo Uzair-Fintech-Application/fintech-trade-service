@@ -12,4 +12,10 @@ public final class TradeConstants {
 
     public static final int CURRENCY_SCALE = 8;
     public static final int RATE_SCALE = 18;
+
+    /** System liquidity pool user ID — matches wallet-service SYSTEM_USER_ID */
+    public static final int SYSTEM_USER_ID = 1;
+
+    /** Commission wallet user ID — matches wallet-service COMMISSION_USER_ID */
+    public static final int COMMISSION_USER_ID = 2;
 }

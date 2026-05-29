@@ -1,5 +1,8 @@
-package com.fintech.trade.exception;
+package com.fintech.trade.advice;
 
+import com.fintech.trade.exception.MarketDeviationException;
+import com.fintech.trade.exception.ResourceNotFoundException;
+import com.fintech.trade.exception.TradeStateException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.MessageSource;

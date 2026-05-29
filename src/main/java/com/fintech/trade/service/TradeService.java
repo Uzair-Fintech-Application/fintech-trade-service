@@ -1,6 +1,7 @@
 package com.fintech.trade.service;
 
 import com.fintech.trade.dto.CreateTradeRequest;
+import com.fintech.trade.dto.MarketOracleResponse;
 import com.fintech.trade.dto.UpdateTradeRequest;
 import com.fintech.trade.entity.Trade;
 import org.springframework.data.domain.Page;
@@ -21,4 +22,7 @@ public interface TradeService {
     Page<Trade> getOpenTrades(Pageable pageable);
 
     Page<Trade> getUserTrades(Integer userId, Pageable pageable);
+
+    MarketOracleResponse getOracleRates(String base);
 }
+
