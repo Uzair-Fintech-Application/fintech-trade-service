@@ -28,6 +28,9 @@ public class TradeController {
     @Operation(summary = "Create a trade offer")
     public ResponseEntity<TradeResponse> create(@AuthenticationPrincipal AuthenticatedUser user,
                                                  @Valid @RequestBody CreateTradeRequest req) {
+        if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new IllegalArgumentException("Access Denied: System Administrators are strictly prohibited from creating or accepting P2P trades. This action is restricted to standard users to maintain market integrity.");
+        }
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(mapper.toTradeResponse(tradeService.createTrade(user.getId(), req)));
     }
@@ -39,9 +42,15 @@ public class TradeController {
     }
 
     @GetMapping
-    @Operation(summary = "Browse open trades")
-    public ResponseEntity<Page<TradeResponse>> open(@PageableDefault(size = 20) Pageable p) {
-        return ResponseEntity.ok(tradeService.getOpenTrades(p).map(mapper::toTradeResponse));
+    @Operation(summary = "Browse trades")
+    public ResponseEntity<Page<TradeResponse>> all(@AuthenticationPrincipal AuthenticatedUser user, 
+                                                   @PageableDefault(size = 20, sort = "createdAt", direction = org.springframework.data.domain.Sort.Direction.DESC) Pageable p) {
+        boolean isAdmin = "ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole());
+        if (isAdmin) {
+            return ResponseEntity.ok(tradeService.getAllTrades(p).map(mapper::toTradeResponse));
+        } else {
+            return ResponseEntity.ok(tradeService.getOpenTrades(p).map(mapper::toTradeResponse));
+        }
     }
 
     @GetMapping("/my")
@@ -61,6 +70,9 @@ public class TradeController {
     @Operation(summary = "Accept trade")
     public ResponseEntity<TradeResponse> accept(@AuthenticationPrincipal AuthenticatedUser user,
                                                  @PathVariable Integer id) {
+        if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            throw new IllegalArgumentException("Access Denied: System Administrators are strictly prohibited from creating or accepting P2P trades. This action is restricted to standard users to maintain market integrity.");
+        }
         return ResponseEntity.ok(mapper.toTradeResponse(tradeService.acceptTrade(user.getId(), id)));
     }
 

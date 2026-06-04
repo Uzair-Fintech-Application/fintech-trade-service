@@ -21,6 +21,8 @@ public interface TradeService {
 
     Page<Trade> getOpenTrades(Pageable pageable);
 
+    Page<Trade> getAllTrades(Pageable pageable);
+
     Page<Trade> getUserTrades(Integer userId, Pageable pageable);
 
     MarketOracleResponse getOracleRates(String base);

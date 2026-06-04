@@ -49,6 +49,11 @@ public class TradeServiceImpl implements TradeService {
             throw new IllegalArgumentException(
                     msg("error.wallet.frozen", req.getSellCurrency()));
         }
+        if (sellerWallet.getAvailableBalance().compareTo(req.getSellAmount()) < 0) {
+            log.warn("TRADE_CREATE REJECTED | reason=INSUFFICIENT_FUNDS | sellerId={} | available={} | requested={}", 
+                    sellerId, sellerWallet.getAvailableBalance(), req.getSellAmount());
+            throw new IllegalArgumentException("Insufficient balance to create this trade");
+        }
 
         if (req.getSellCurrency() == req.getBuyCurrency()) {
             log.warn("TRADE_CREATE REJECTED | reason=SAME_CURRENCY | sellerId={}", sellerId);
@@ -201,6 +206,13 @@ public class TradeServiceImpl implements TradeService {
             throw new IllegalArgumentException(msg("error.trade.update.not.seller"));
         }
 
+        WalletResponse sellerWallet = walletServiceClient.getOrCreateWallet(userId, trade.getSellCurrency().name());
+        if (sellerWallet != null && sellerWallet.getAvailableBalance().compareTo(req.getSellAmount()) < 0) {
+            log.warn("TRADE_UPDATE REJECTED | reason=INSUFFICIENT_FUNDS | userId={} | available={} | requested={}", 
+                    userId, sellerWallet.getAvailableBalance(), req.getSellAmount());
+            throw new IllegalArgumentException("Insufficient balance to update this trade");
+        }
+
         trade.setSellAmount(req.getSellAmount());
         trade.setExchangeRate(req.getExchangeRate());
         BigDecimal buyAmount = req.getSellAmount()
@@ -241,6 +253,12 @@ public class TradeServiceImpl implements TradeService {
     @Transactional(readOnly = true)
     public Page<Trade> getOpenTrades(Pageable pageable) {
         return tradeRepository.findByState(TradeState.OPEN, pageable);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<Trade> getAllTrades(Pageable pageable) {
+        return tradeRepository.findAll(pageable);
     }
 
     @Override
